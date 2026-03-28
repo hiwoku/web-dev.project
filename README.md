@@ -1,9 +1,9 @@
 ## EduFinder
 
 ### Group members: 
-Mamedova Mariya
-Marat Aiganym 
-Serikzhan Zhibek
+Mamedova Mariya <br>
+Marat Aiganym <br>
+Serikzhan Zhibek <br>
 
 ### EduFinder – Course Discovery Platform
 
