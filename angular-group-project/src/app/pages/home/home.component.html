@@ -1,0 +1,41 @@
+<section class="hero">
+  <div class="slider">
+    <button class="slide-btn left" (click)="prevSlide()">‹</button>
+    <img [src]="slides[currentSlide]" alt="Banner" />
+    <button class="slide-btn right" (click)="nextSlide()">›</button>
+  </div>
+
+  <div class="dots">
+    <span class="dot" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide"></span>
+  </div>
+</section>
+
+<section class="actions">
+  <button (click)="loadNews()">Загрузить новости</button>
+  <button (click)="loadCompanies()">Показать компании</button>
+</section>
+
+<p *ngIf="infoMessage" class="success">{{ infoMessage }}</p>
+<p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+<section class="block">
+  <h2>Новости</h2>
+  <div class="cards">
+    <div *ngFor="let item of news" class="card">
+      <img [src]="item.image || 'assets/images/banner1.jpg'" alt="News" />
+      <h3>{{ item.title }}</h3>
+      <p>{{ item.content }}</p>
+    </div>
+  </div>
+</section>
+
+<section *ngIf="companies.length > 0" class="block">
+  <h2>Компании</h2>
+  <div class="cards">
+    <div *ngFor="let company of companies" class="card">
+      <img [src]="company.logo || 'assets/images/company1.png'" alt="Company" />
+      <h3>{{ company.name }}</h3>
+      <p>{{ company.description }}</p>
+    </div>
+  </div>
+</section>

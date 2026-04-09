@@ -1,0 +1,20 @@
+<section class="companies-page">
+  <h1>Компании</h1>
+
+  @if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+  }
+
+  <div class="company-grid">
+    @for (company of companies; track company.id) {
+      <div class="company-card">
+        <img [src]="company.logo || 'assets/images/company1.png'" alt="Company" />
+        <h3>{{ company.name }}</h3>
+        <p>{{ company.description }}</p>
+        @if (company.website) {
+          <a [href]="company.website" target="_blank">Перейти на сайт</a>
+        }
+      </div>
+    }
+  </div>
+</section>

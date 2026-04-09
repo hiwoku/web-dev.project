@@ -1,0 +1,48 @@
+.companies-page {
+  padding: 30px;
+}
+
+.companies-page h1 {
+  font-size: 34px;
+  margin-bottom: 20px;
+}
+
+.company-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.company-card {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+}
+
+.company-card img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+.company-card h3 {
+  margin: 8px 0;
+}
+
+.company-card p {
+  color: #666;
+  min-height: 60px;
+}
+
+.company-card a {
+  display: inline-block;
+  margin-top: 12px;
+  text-decoration: none;
+  color: #2950d4;
+}
+
+.error {
+  color: #c62828;
+}

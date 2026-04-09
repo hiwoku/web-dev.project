@@ -1,0 +1,14 @@
+<section class="auth-page">
+  <div class="auth-card">
+    <h1>Вход</h1>
+
+    <input [(ngModel)]="email" type="email" placeholder="Email" />
+    <input [(ngModel)]="password" type="password" placeholder="Пароль" />
+
+    <button (click)="submitLogin()">Войти</button>
+
+    @if (errorMessage) {
+      <p class="error">{{ errorMessage }}</p>
+    }
+  </div>
+</section>

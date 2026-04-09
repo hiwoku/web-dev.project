@@ -1,0 +1,34 @@
+<section class="courses-page">
+  <h1>Курсы</h1>
+
+  <div class="search-panel">
+    <input [(ngModel)]="search" type="text" placeholder="Введите название курса" />
+    <button (click)="searchCourses()">Поиск</button>
+  </div>
+
+  @if (successMessage) {
+    <p class="success">{{ successMessage }}</p>
+  }
+
+  @if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+  }
+
+  <div class="course-grid">
+    @for (course of courses; track course.id) {
+      <div class="course-card">
+        <img [src]="course.image || 'assets/images/course1.jpg'" alt="Course" />
+        <h3>{{ course.title }}</h3>
+        <p>{{ course.description }}</p>
+        <div class="bottom">
+          <span>{{ course.price }} ₸</span>
+          <button (click)="enroll(course.id)">Записаться</button>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (courses.length === 0) {
+    <p class="empty">Курсы пока не найдены</p>
+  }
+</section>

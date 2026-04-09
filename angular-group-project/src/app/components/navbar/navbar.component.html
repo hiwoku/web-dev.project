@@ -1,0 +1,26 @@
+<header class="header">
+  <div class="logo" routerLink="/"><img src="/assets/images/logo.png" alt="Logo" /></div>
+
+  <div class="search-box">
+    <input [(ngModel)]="searchText" type="text" placeholder="Какой курс вас интересует?" />
+    <button (click)="goToCourses()">🔍</button>
+  </div>
+
+  <nav class="nav">
+    <a routerLink="/courses">Курсы</a>
+    <a routerLink="/companies">Компании</a>
+    <a routerLink="/">Новости</a>
+  </nav>
+
+  <div class="auth-buttons">
+    <ng-container *ngIf="!authService.isLoggedIn()">
+      <a routerLink="/login" class="login-link">Войти</a>
+      <a routerLink="/register" class="register-link">Зарегистрироваться</a>
+    </ng-container>
+
+    <ng-container *ngIf="authService.isLoggedIn()">
+      <span class="user-welcome">Привет, {{ userName }}!</span>
+      <button class="logout-btn" (click)="logout()">Выйти</button>
+    </ng-container>
+  </div>
+</header>
