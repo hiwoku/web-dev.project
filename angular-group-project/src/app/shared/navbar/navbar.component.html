@@ -1,0 +1,127 @@
+<nav class="navbar">
+  <a routerLink="/home" class="navbar-logo">EduFinder</a>
+
+  <div class="navbar-search">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+      placeholder="What course are you looking for?"
+      class="search-input"
+    />
+    <button (click)="onSearch()" class="search-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="navbar-links">
+    <a routerLink="/courses">Courses</a>
+    <a routerLink="/home">Companies</a>
+    <a routerLink="/home">News</a>
+  </div>
+
+  <div class="navbar-actions">
+    @if (authService.isLoggedIn()) {
+      <span class="nav-username">{{ authService.currentUsername() }}</span>
+      <button (click)="onLogout()" class="btn-outline">Logout</button>
+    } @else {
+      <a routerLink="/login" class="btn-outline">Login</a>
+      <a routerLink="/login" class="btn-primary">Register</a>
+    }
+  </div>
+</nav>
+
+<style>
+  .navbar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: #4F46E5;
+    padding: 0 32px;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(79,70,229,0.3);
+  }
+  .navbar-logo {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: -0.5px;
+  }
+  .navbar-search {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    background: transparent;
+  }
+  .search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 12px;
+    color: #4F46E5;
+    display: flex;
+    align-items: center;
+  }
+  .navbar-links {
+    display: flex;
+    gap: 24px;
+    margin-left: auto;
+  }
+  .navbar-links a {
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .navbar-links a:hover { color: #fff; }
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-username {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.9rem;
+  }
+  .btn-outline {
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.7);
+    background: transparent;
+    padding: 6px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.15); }
+  .btn-primary {
+    color: #4F46E5;
+    background: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+</style>
