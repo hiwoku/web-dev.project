@@ -1,59 +1,49 @@
-import { Component, OnInit } from '@angular/core'
-import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
-import { ActivatedRoute } from '@angular/router'
-import { ApiService } from '../../services/api.service'
-import { Course } from '../../models/course'
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../core/services/api.service';
+import { Course } from '../../models/course.model';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [RouterLink, FormsModule],
   templateUrl: './courses.component.html',
-  styleUrl: './courses.component.css',
 })
 export class CoursesComponent implements OnInit {
-  search = ''
-  courses: Course[] = []
-  errorMessage = ''
-  successMessage = ''
+  private api = inject(ApiService);
+  private route = inject(ActivatedRoute);
 
-  constructor(
-    private apiService: ApiService,
-    private route: ActivatedRoute
-  ) {}
+  courses = signal<Course[]>([]);
+  isLoading = signal(true);
+  error = signal('');
+  searchQuery = signal('');
+  levelFilter = signal('');
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      this.search = params['search'] || ''
-      this.searchCourses()
-    })
+      this.searchQuery.set(params['search'] || '');
+      this.loadCourses();
+    });
   }
 
-  searchCourses() {
-    this.errorMessage = ''
-    this.successMessage = ''
-    this.apiService.getCourses(this.search).subscribe({
-      next: data => {
-        this.courses = data
-        this.successMessage = 'Курсы загружены'
-      },
-      error: () => {
-        this.errorMessage = 'Ошибка при загрузке курсов'
-      }
-    })
+  loadCourses(): void {
+    this.isLoading.set(true);
+    this.error.set('');
+    this.api.getCourses(this.searchQuery(), this.levelFilter()).subscribe({
+      next: data => { this.courses.set(data); this.isLoading.set(false); },
+      error: err => { this.error.set(err.message); this.isLoading.set(false); }
+    });
   }
 
-  enroll(courseId: number) {
-    this.errorMessage = ''
-    this.successMessage = ''
-    this.apiService.enrollToCourse(courseId).subscribe({
-      next: () => {
-        this.successMessage = 'Вы успешно записались на курс'
-      },
-      error: () => {
-        this.errorMessage = 'Не удалось записаться на курс'
-      }
-    })
+  onSearch(): void { this.loadCourses(); }
+
+  onLevelChange(level: string): void {
+    this.levelFilter.set(level);
+    this.loadCourses();
+  }
+
+  getLevelColor(level: string): string {
+    return { beginner: '#10B981', intermediate: '#F59E0B', advanced: '#EF4444' }[level] || '#6B7280';
   }
 }
