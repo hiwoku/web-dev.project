@@ -1,7 +1,9 @@
 <!-- Banner Carousel -->
 <div class="banner" [style.background]="bannerSlides[currentSlide()].bg">
   <div class="banner-content">
-    <h1>{{ bannerSlides[currentSlide()].title }}</h1>
+   <h1 [class]="bannerSlides[currentSlide()].fontClass">
+  {{ bannerSlides[currentSlide()].title }}
+</h1>
     <p>{{ bannerSlides[currentSlide()].subtitle }}</p>
     <a routerLink="/courses" class="banner-cta">Browse Courses</a>
   </div>
@@ -199,4 +201,8 @@
     text-decoration: none;
     font-weight: 600;
   }
+
+  .font-classic {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 </style>

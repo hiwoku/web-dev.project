@@ -17,9 +17,9 @@ export class HomeComponent implements OnInit {
   error = signal('');
 
   bannerSlides = [
-    { title: 'Unlock Your Potential', subtitle: 'Explore thousands of courses from top instructors', bg: '#4F46E5' },
-    { title: 'Learn at Your Own Pace', subtitle: 'From beginner to expert — we have a course for you', bg: '#7C3AED' },
-    { title: 'Advance Your Career', subtitle: 'Industry-recognized certifications await', bg: '#2563EB' },
+    { title: 'Unlock Your Potential', subtitle: 'Explore thousands of courses from top instructors', bg: '#4F46E5', fontClass: 'font-classic' },
+    { title: 'Learn at Your Own Pace', subtitle: 'From beginner to expert — we have a course for you', bg: '#7C3AED' , fontClass: 'font-classic'},
+    { title: 'Advance Your Career', subtitle: 'Industry-recognized certifications await', bg: '#2563EB' , fontClass: 'font-classic'},
   ];
   currentSlide = signal(0);
 
