@@ -1,9 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Course, Enrollment, Review, Category
-
-
-# --- ModelSerializers ---
+#modelserializers
 
 class CourseSerializer(serializers.ModelSerializer):
     instructor_name = serializers.SerializerMethodField()
@@ -42,7 +40,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         return obj.course.title
 
 
-# --- Plain Serializers (non-model) ---
+#plain serializers////////
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)

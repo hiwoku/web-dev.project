@@ -11,7 +11,7 @@ from .serializers import (
 )
 
 
-# --- Class-Based Views ---
+# CBV
 
 class CourseListAPIView(generics.ListCreateAPIView):
     serializer_class = CourseSerializer
@@ -51,7 +51,7 @@ class CourseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         return super().destroy(request, *args, **kwargs)
 
 
-# --- Function-Based Views ---
+# FBV
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
