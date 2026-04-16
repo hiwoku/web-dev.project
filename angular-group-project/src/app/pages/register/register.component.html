@@ -1,0 +1,17 @@
+<p>register works!</p>
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Create Account</h1>
+    @if (error) { <p class="error">{{ error }}</p> }
+
+    <div class="role-selector">
+      <button [class.active]="role==='user'" (click)="role='user'">👤 I'm a Learner</button>
+      <button [class.active]="role==='company_rep'" (click)="role='company_rep'">🏢 I Represent a Company</button>
+    </div>
+
+    <input [(ngModel)]="username" placeholder="Username" />
+    <input [(ngModel)]="email" type="email" placeholder="Email" />
+    <input [(ngModel)]="password" type="password" placeholder="Password" />
+    <button (click)="submit()" class="btn-primary">Register</button>
+  </div>
+</div>

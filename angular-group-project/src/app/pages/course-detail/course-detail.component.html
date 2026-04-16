@@ -1,134 +1,74 @@
-<div class="detail-page">
-  @if (isLoading()) {
-    <div class="loading">Loading course details...</div>
-  } @else if (error()) {
-    <div class="error-box">⚠️ {{ error() }}</div>
-  } @else if (course()) {
-    <div class="hero" [style.background]="'hsl(' + (course()!.id * 47 % 360) + ',60%,50%)'">
-      <div class="hero-content">
-        <span class="hero-category">{{ course()!.category_name || 'General' }}</span>
-        <h1>{{ course()!.title }}</h1>
-        <p>by {{ course()!.instructor_name }}</p>
-        <div class="hero-meta">
-          <span class="badge-lg" [style.background]="getLevelColor(course()!.level)">{{ course()!.level }}</span>
-          @if (course()!.average_rating) {
-            <span class="rating-lg">★ {{ course()!.average_rating }} / 5</span>
+@if (course) {
+  <div class="course-detail">
+    <div class="hero">
+      <img [src]="course.thumbnail || 'assets/placeholder.png'" [alt]="course.title" />
+      <div class="hero-info">
+        <h1>{{ course.title }}</h1>
+        <p class="company">by {{ course.company_name }}</p>
+        <div class="rating">⭐ {{ course.average_rating }} · {{ course.level }} · {{ course.duration_hours }}h</div>
+        <p>{{ course.description }}</p>
+        <div class="skills">
+          <strong>Skills you'll gain:</strong>
+          @for (skill of course.skills; track skill) {
+            <span class="skill-tag">{{ skill }}</span>
           }
         </div>
-      </div>
-    </div>
-
-    <div class="content-wrap">
-      <div class="main-content">
-        <section class="card-section">
-          <h2>About This Course</h2>
-          <p>{{ course()!.description }}</p>
-        </section>
-      </div>
-
-      <div class="sidebar">
-        <div class="enroll-card">
-          <div class="price-display">
-            @if (course()!.price > 0) {
-              <span class="price-big">${{ course()!.price }}</span>
-            } @else {
-              <span class="price-free">Free</span>
-            }
-          </div>
-
-          @if (authService.isLoggedIn()) {
-            <button
-              class="enroll-btn"
-              (click)="onEnroll()"
-              [disabled]="isEnrolling()"
-            >
-              {{ isEnrolling() ? 'Enrolling...' : 'Enroll Now' }}
-            </button>
+        @if (course.is_free) {
+          <button (click)="enroll()" [disabled]="course.is_enrolled || enrolling" class="btn-enroll">
+            {{ course.is_enrolled ? 'Enrolled' : 'Enroll for Free' }}
+          </button>
+        } @else {
+          @if (!course.is_enrolled) {
+            <a [routerLink]="['/payment', course.id]" class="btn-buy">Buy — ${{ course.price }}</a>
+            <button (click)="addToCart()" class="btn-cart">+ Plan to Take</button>
           } @else {
-            <a routerLink="/login" class="enroll-btn">Login to Enroll</a>
+            <span class="enrolled-badge">✓ Enrolled</span>
           }
-
-          @if (enrollMessage()) {
-            <p class="enroll-msg">{{ enrollMessage() }}</p>
-          }
-
-          <div class="course-info-list">
-            <div class="info-row">
-              <span class="info-label">Level</span>
-              <span>{{ course()!.level | titlecase }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Instructor</span>
-              <span>{{ course()!.instructor_name }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Category</span>
-              <span>{{ course()!.category_name || '—' }}</span>
-            </div>
-          </div>
-        </div>
+        }
       </div>
     </div>
-  }
-</div>
 
-<style>
-  .detail-page { max-width: 1100px; margin: 0 auto; padding-bottom: 60px; }
-  .hero {
-    padding: 60px 40px;
-    color: #fff;
-    border-radius: 0 0 16px 16px;
-    margin-bottom: 40px;
-  }
-  .hero-category {
-    background: rgba(255,255,255,0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    display: inline-block;
-    margin-bottom: 16px;
-  }
-  .hero h1 { font-size: 2.2rem; font-weight: 700; margin: 0 0 10px; }
-  .hero p { font-size: 1.05rem; opacity: 0.85; margin: 0 0 20px; }
-  .hero-meta { display: flex; align-items: center; gap: 12px; }
-  .badge-lg {
-    color: #fff;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    text-transform: capitalize;
-  }
-  .rating-lg { font-size: 0.95rem; opacity: 0.9; }
-  .content-wrap { display: grid; grid-template-columns: 1fr 320px; gap: 32px; padding: 0 40px; }
-  .card-section { background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-  .card-section h2 { font-size: 1.25rem; font-weight: 600; margin: 0 0 16px; color: #1F2937; }
-  .card-section p { color: #374151; line-height: 1.7; margin: 0; }
-  .enroll-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); position: sticky; top: 80px; }
-  .price-display { margin-bottom: 20px; text-align: center; }
-  .price-big { font-size: 2rem; font-weight: 700; color: #1F2937; }
-  .price-free { font-size: 1.8rem; font-weight: 700; color: #10B981; }
-  .enroll-btn {
-    display: block;
-    width: 100%;
-    background: #4F46E5;
-    color: #fff;
-    border: none;
-    padding: 14px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    transition: opacity 0.2s;
-    box-sizing: border-box;
-  }
-  .enroll-btn:hover { opacity: 0.9; }
-  .enroll-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .enroll-msg { margin-top: 12px; text-align: center; color: #10B981; font-size: 0.9rem; }
-  .course-info-list { margin-top: 20px; border-top: 1px solid #F3F4F6; padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .info-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
-  .info-label { color: #9CA3AF; }
-  .loading, .error-box { text-align: center; padding: 60px; font-size: 1.1rem; color: #6B7280; }
-  .error-box { color: #DC2626; }
-</style>
+    <!-- Videos -->
+    <section class="videos-section">
+      <h2>Course Content</h2>
+      @for (video of course.videos; track video.id) {
+        <div class="video-item" [class.locked]="!canWatch(video)">
+          <button (click)="activeVideo = canWatch(video) ? video : activeVideo">
+            {{ video.is_free_preview ? '▶ (Preview)' : (course.is_enrolled ? '▶' : '🔒') }}
+            {{ video.title }}
+          </button>
+        </div>
+      }
+      @if (activeVideo && canWatch(activeVideo)) {
+        <div class="video-player">
+          <iframe [src]="activeVideo.video_url" allowfullscreen></iframe>
+        </div>
+      }
+    </section>
+
+    <!-- Reviews -->
+    <section class="reviews-section">
+      <h2>Reviews</h2>
+      @for (review of course.reviews; track review.id) {
+        <div class="review-card">
+          <strong>{{ review.username }}</strong>
+          <span class="stars">{{ '⭐'.repeat(review.rating) }}</span>
+          <p>{{ review.comment }}</p>
+          <small>{{ review.created_at | date }}</small>
+        </div>
+      }
+
+      @if (auth.isLoggedIn()) {
+        <div class="add-review">
+          <h3>Leave a Review</h3>
+          @if (reviewError) { <p class="error">{{ reviewError }}</p> }
+          <select [(ngModel)]="reviewRating">
+            @for (n of [5,4,3,2,1]; track n) { <option [value]="n">{{ n }} Stars</option> }
+          </select>
+          <textarea [(ngModel)]="reviewText" placeholder="Share your experience..."></textarea>
+          <button (click)="submitReview()">Submit Review</button>
+        </div>
+      }
+    </section>
+  </div>
+}

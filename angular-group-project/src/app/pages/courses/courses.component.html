@@ -1,123 +1,53 @@
 <div class="courses-page">
-  <div class="page-header">
-    <h1>All Courses</h1>
-    <p>Discover skills that shape your future</p>
-  </div>
-
-  <div class="filters-bar">
-    <div class="search-wrap">
-      <input
-        type="text"
-        [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)"
-        (keyup.enter)="onSearch()"
-        placeholder="Search courses..."
-        class="filter-input"
-      />
-      <button (click)="onSearch()" class="search-go">Search</button>
+  <!-- Search & Filters -->
+  <div class="filters">
+    <input [(ngModel)]="search" (ngModelChange)="onSearch()" placeholder="Search courses..." class="search-input" />
+    <select [(ngModel)]="selectedCategory" (change)="loadCourses()">
+      <option value="">All Categories</option>
+      @for (cat of categories; track cat.id) {
+        <option [value]="cat.id">{{ cat.name }}</option>
+      }
+    </select>
+    <div class="type-tabs">
+      <button [class.active]="selectedType==='all'" (click)="selectedType='all'; loadCourses()">All</button>
+      <button [class.active]="selectedType==='free'" (click)="selectedType='free'; loadCourses()">Free</button>
+      <button [class.active]="selectedType==='paid'" (click)="selectedType='paid'; loadCourses()">Paid</button>
     </div>
-    <select #levelSelect class="filter-select" (change)="onLevelChange(levelSelect.value)">   
-
-      <option value="">All Levels</option>
-      <option value="beginner">Beginner</option>
-      <option value="intermediate">Intermediate</option>
-      <option value="advanced">Advanced</option>
+    <select [(ngModel)]="sortBy" (change)="loadCourses()">
+      <option value="">Sort by</option>
+      <option value="rating">Top Rated</option>
     </select>
   </div>
 
-  @if (isLoading()) {
-    <div class="loading-text">Loading courses...</div>
-  } @else if (error()) {
-    <div class="error-box">⚠️ {{ error() }}</div>
-  } @else if (courses().length === 0) {
-    <div class="empty-box">No courses found. Try a different search.</div>
-  } @else {
-    <div class="results-count">{{ courses().length }} course(s) found</div>
-    <div class="grid">
-      @for (course of courses(); track course.id) {
-        <a routerLink="/courses/{{ course.id }}" class="card">
-          <div class="card-thumb" [style.background]="'hsl(' + (course.id * 47 % 360) + ',60%,55%)'">
-            <span class="chip">{{ course.category_name || 'General' }}</span>
-          </div>
-          <div class="card-body">
-            <h3>{{ course.title }}</h3>
-            <p class="sub">by {{ course.instructor_name }}</p>
-            <p class="desc">{{ course.description | slice:0:80 }}...</p>
-            <div class="meta">
-              <span class="badge" [style.background]="getLevelColor(course.level)">{{ course.level }}</span>
-              @if (course.average_rating) {
-                <span class="stars">★ {{ course.average_rating }}</span>
-              }
-              <span class="price">{{ course.price > 0 ? '$' + course.price : 'Free' }}</span>
-            </div>
-          </div>
-        </a>
-      }
-    </div>
-  }
-</div>
+  @if (loading) { <p>Loading...</p> }
 
-<style>
-  .courses-page { max-width: 1200px; margin: 0 auto; padding: 40px; }
-  .page-header { margin-bottom: 32px; }
-  .page-header h1 { font-size: 2rem; font-weight: 700; color: #1F2937; margin: 0 0 8px; }
-  .page-header p { color: #6B7280; margin: 0; }
-  .filters-bar { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
-  .search-wrap { display: flex; flex: 1; min-width: 240px; gap: 8px; }
-  .filter-input {
-    flex: 1;
-    padding: 10px 16px;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .filter-input:focus { border-color: #4F46E5; }
-  .search-go {
-    background: #4F46E5;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-  }
-  .filter-select {
-    padding: 10px 16px;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    outline: none;
-    cursor: pointer;
-  }
-  .results-count { color: #6B7280; font-size: 0.9rem; margin-bottom: 20px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    text-decoration: none;
-    transition: box-shadow 0.2s, transform 0.2s;
-  }
-  .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); transform: translateY(-3px); }
-  .card-thumb { height: 120px; padding: 12px; display: flex; align-items: flex-start; }
-  .chip {
-    background: rgba(255,255,255,0.25);
-    color: #fff;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-  }
-  .card-body { padding: 16px; }
-  .card-body h3 { font-size: 1rem; font-weight: 600; color: #1F2937; margin: 0 0 4px; }
-  .sub { font-size: 0.82rem; color: #9CA3AF; margin: 0 0 8px; }
-  .desc { font-size: 0.85rem; color: #6B7280; margin: 0 0 12px; line-height: 1.5; }
-  .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .badge { color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; text-transform: capitalize; }
-  .stars { color: #F59E0B; font-size: 0.85rem; }
-  .price { margin-left: auto; font-weight: 700; color: #4F46E5; font-size: 0.95rem; }
-  .loading-text, .empty-box { text-align: center; padding: 60px; color: #6B7280; font-size: 1.1rem; }
-  .error-box { background: #FEF2F2; color: #DC2626; padding: 16px; border-radius: 8px; }
-</style>
+  <!-- Course Grid -->
+  <div class="courses-grid">
+    @for (course of visibleCourses; track course.id) {
+      <div class="course-card-wrapper">
+        <a [routerLink]="['/courses', course.id]" class="course-card">
+          <img [src]="course.thumbnail || 'assets/placeholder.png'" [alt]="course.title" />
+          <div class="card-body">
+            <span class="badge" [class.free]="course.is_free">{{ course.is_free ? 'Free' : '$' + course.price }}</span>
+            <h3>{{ course.title }}</h3>
+            <p class="company">{{ course.company_name }}</p>
+            <div class="rating"> {{ course.average_rating }} · {{ course.level }}</div>
+          </div>
+          <!-- Hover tooltip -->
+          <div class="tooltip">{{ course.short_description }}</div>
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-controls">
+    @if (hasMore) {
+      <button (click)="showMore()" class="btn-more">Show More</button>
+    }
+    @if (canCollapse) {
+      <button (click)="showLess()" class="btn-less">Show Less</button>
+    }
+    <span>Showing {{ visibleCourses.length }} of {{ courses.length }}</span>
+  </div>
+</div>

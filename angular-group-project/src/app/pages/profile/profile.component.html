@@ -1,0 +1,56 @@
+@if (profile) {
+  <div class="profile-page">
+    <div class="profile-header">
+      <div class="avatar">{{ profile.username[0].toUpperCase() }}</div>
+      <div>
+        <h1>{{ profile.username }}</h1>
+        <p class="role">{{ profile.role === 'company_rep' ? '🏢 Company Representative' : '👤 Learner' }}</p>
+        <p>{{ profile.email }}</p>
+      </div>
+      @if (profile.role === 'company_rep') {
+        <a routerLink="/add-course" class="btn-add">+ Add Course</a>
+      }
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="number">{{ profile.enrolled_courses.length }}</span>
+        <span class="label">Courses Taken</span>
+      </div>
+      <div class="stat">
+        <span class="number">{{ profile.cart_courses.length }}</span>
+        <span class="label">Plan to Take</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button [class.active]="activeTab==='enrolled'" (click)="activeTab='enrolled'">My Courses</button>
+      <button [class.active]="activeTab==='cart'" (click)="activeTab='cart'">Plan to Take 🛒</button>
+    </div>
+
+    @if (activeTab === 'enrolled') {
+      <div class="course-grid">
+        @for (course of profile.enrolled_courses; track course.id) {
+          <a [routerLink]="['/courses', course.id]" class="mini-course-card">
+            <h4>{{ course.title }}</h4>
+            <span>{{ course.company_name }}</span>
+          </a>
+        }
+        @empty { <p>No courses enrolled yet.</p> }
+      </div>
+    }
+
+    @if (activeTab === 'cart') {
+      <div class="course-grid">
+        @for (course of profile.cart_courses; track course.id) {
+          <div class="mini-course-card">
+            <a [routerLink]="['/courses', course.id]"><h4>{{ course.title }}</h4></a>
+            <span>{{ course.is_free ? 'Free' : '$' + course.price }}</span>
+            <button (click)="removeFromCart(course.id)" class="btn-remove">Remove</button>
+          </div>
+        }
+        @empty { <p>Nothing planned yet. Browse <a routerLink="/courses">courses</a>!</p> }
+      </div>
+    }
+  </div>
+}

@@ -1,50 +1,53 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SlicePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { Course } from '../../models/course.model';
+import { Course, Category } from '../../models/course.model';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [RouterLink, FormsModule, SlicePipe],
-  templateUrl: './courses.component.html',
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './courses.component.html'
 })
 export class CoursesComponent implements OnInit {
-  private api = inject(ApiService);
-  private route = inject(ActivatedRoute);
+  allCourses: Course[] = [];
+  courses: Course[] = [];
+  categories: Category[] = [];
+  search = '';
+  selectedCategory = '';
+  selectedType: 'all' | 'free' | 'paid' = 'all';
+  sortBy = '';
+  pageSize = 5;
+  visibleCount = 5;
+  loading = false;
 
-  courses = signal<Course[]>([]);
-  isLoading = signal(true);
-  error = signal('');
-  searchQuery = signal('');
-  levelFilter = signal('');
+  constructor(private api: ApiService) {}
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.searchQuery.set(params['search'] || '');
-      this.loadCourses();
-    });
-  }
-
-  loadCourses(): void {
-    this.isLoading.set(true);
-    this.error.set('');
-    this.api.getCourses(this.searchQuery(), this.levelFilter()).subscribe({
-      next: data => { this.courses.set(data); this.isLoading.set(false); },
-      error: err => { this.error.set(err.message); this.isLoading.set(false); }
-    });
-  }
-
-  onSearch(): void { this.loadCourses(); }
-
-  onLevelChange(level: string): void {
-    this.levelFilter.set(level);
+  ngOnInit() {
+    this.api.getCategories().subscribe(cats => this.categories = cats);
     this.loadCourses();
   }
 
-  getLevelColor(level: string): string {
-    return { beginner: '#10B981', intermediate: '#F59E0B', advanced: '#EF4444' }[level] || '#6B7280';
+  loadCourses() {
+    this.loading = true;
+    const params: any = {};
+    if (this.search) params['search'] = this.search;
+    if (this.selectedCategory) params['category'] = this.selectedCategory;
+    if (this.selectedType !== 'all') params['is_free'] = this.selectedType === 'free' ? 'true' : 'false';
+    if (this.sortBy) params['sort'] = this.sortBy;
+    this.api.getCourses(params).subscribe({
+      next: (data) => { this.allCourses = data; this.courses = data; this.visibleCount = this.pageSize; this.loading = false; },
+      error: () => this.loading = false
+    });
   }
+
+  get visibleCourses() { return this.courses.slice(0, this.visibleCount); }
+  get hasMore() { return this.visibleCount < this.courses.length; }
+  get canCollapse() { return this.visibleCount > this.pageSize; }
+
+  showMore() { this.visibleCount = Math.min(this.visibleCount + this.pageSize, this.courses.length); }
+  showLess() { this.visibleCount = this.pageSize; }
+  onSearch() { this.loadCourses(); }
 }

@@ -1,64 +1,76 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
-import { Course, LoginResponse, EnrollmentResponse } from '../../models/course.model';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private baseUrl = 'http://localhost:8000/api';
+  private readonly BASE_URL = 'http://localhost:8000/api';
 
   constructor(private http: HttpClient) {}
 
-  // --- Auth ---
-  login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/login/`, { username, password }).pipe(
-      catchError(err => throwError(() => new Error(err.error?.error || 'Invalid credentials.')))
-    );
+  getCourses(params?: any): Observable<any[]> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key]) httpParams = httpParams.set(key, params[key]);
+      });
+    }
+    return this.http.get<any[]>(`${this.BASE_URL}/courses/`, { params: httpParams });
   }
 
-  logout(): Observable<any> {
-    return this.http.post(`${this.baseUrl}/logout/`, {}).pipe(
-      catchError(err => throwError(() => new Error('Logout failed.')))
-    );
+  getCourse(id: number): Observable<any> {
+    return this.http.get<any>(`${this.BASE_URL}/courses/${id}/`);
   }
 
-  // --- Courses ---
-  getCourses(search?: string, level?: string): Observable<Course[]> {
-    let params = new HttpParams();
-    if (search) params = params.set('search', search);
-    if (level) params = params.set('level', level);
-    return this.http.get<Course[]>(`${this.baseUrl}/courses/`, { params }).pipe(
-      catchError(err => throwError(() => new Error('Could not load courses.')))
-    );
+  createCourse(data: any): Observable<any> {
+    return this.http.post<any>(`${this.BASE_URL}/courses/`, data);
   }
 
-  getCourse(id: number): Observable<Course> {
-    return this.http.get<Course>(`${this.baseUrl}/courses/${id}/`).pipe(
-      catchError(err => throwError(() => new Error('Course not found.')))
-    );
-  }
-
-  createCourse(data: Partial<Course>): Observable<Course> {
-    return this.http.post<Course>(`${this.baseUrl}/courses/`, data).pipe(
-      catchError(err => throwError(() => new Error('Failed to create course.')))
-    );
-  }
-
-  updateCourse(id: number, data: Partial<Course>): Observable<Course> {
-    return this.http.put<Course>(`${this.baseUrl}/courses/${id}/`, data).pipe(
-      catchError(err => throwError(() => new Error('Failed to update course.')))
-    );
+  updateCourse(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.BASE_URL}/courses/${id}/`, data);
   }
 
   deleteCourse(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/courses/${id}/`).pipe(
-      catchError(err => throwError(() => new Error('Failed to delete course.')))
-    );
+    return this.http.delete<any>(`${this.BASE_URL}/courses/${id}/`);
   }
 
-  enrollCourse(id: number): Observable<EnrollmentResponse> {
-    return this.http.post<EnrollmentResponse>(`${this.baseUrl}/courses/${id}/enroll/`, {}).pipe(
-      catchError(err => throwError(() => new Error('Enrollment failed.')))
-    );
+  enrollCourse(id: number): Observable<any> {
+    return this.http.post<any>(`${this.BASE_URL}/courses/${id}/enroll/`, {});
+  }
+
+  purchaseCourse(id: number): Observable<any> {
+    return this.http.post<any>(`${this.BASE_URL}/courses/${id}/purchase/`, {});
+  }
+
+  getCompanies(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.BASE_URL}/companies/`);
+  }
+
+  getCompany(id: number): Observable<any> {
+    return this.http.get<any>(`${this.BASE_URL}/companies/${id}/`);
+  }
+
+  createCompany(data: any): Observable<any> {
+    return this.http.post<any>(`${this.BASE_URL}/companies/`, data);
+  }
+
+  getCategories(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.BASE_URL}/categories/`);
+  }
+
+  addReview(data: any): Observable<any> {
+    return this.http.post<any>(`${this.BASE_URL}/reviews/`, data);
+  }
+
+  getProfile(): Observable<any> {
+    return this.http.get<any>(`${this.BASE_URL}/auth/profile/`);
+  }
+
+  addToCart(courseId: number): Observable<any> {
+    return this.http.post<any>(`${this.BASE_URL}/auth/cart/${courseId}/add/`, {});
+  }
+
+  removeFromCart(courseId: number): Observable<any> {
+    return this.http.delete<any>(`${this.BASE_URL}/auth/cart/${courseId}/remove/`);
   }
 }
