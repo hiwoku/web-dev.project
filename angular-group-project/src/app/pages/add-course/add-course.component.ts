@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
@@ -7,7 +7,7 @@ import { ApiService } from '../../core/services/api.service';
 @Component({
   selector: 'app-add-course',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [NgIf, NgFor, FormsModule],
   templateUrl: './add-course.component.html'
 })
 export class AddCourseComponent implements OnInit {

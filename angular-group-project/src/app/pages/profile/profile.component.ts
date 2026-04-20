@@ -7,7 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [NgIf, NgFor, RouterLink], 
+  imports: [RouterLink], 
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {

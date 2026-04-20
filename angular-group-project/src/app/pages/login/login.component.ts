@@ -28,13 +28,12 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.error.set('');
 
-    this.api.login(this.username, this.password).subscribe({
-      next: res => {
-        this.authService.saveAuth(res.token, res.username);
+    this.authService.login(this.username, this.password).subscribe({
+      next: (res: any) => {
         this.isLoading.set(false);
         this.router.navigate(['/home']);
       },
-      error: err => {
+      error: (err: any) => {
         this.error.set(err.message);
         this.isLoading.set(false);
       }

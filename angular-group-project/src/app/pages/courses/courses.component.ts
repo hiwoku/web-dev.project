@@ -33,6 +33,11 @@ export class CoursesComponent implements OnInit {
   loadCourses() {
     this.loading = true;
     const params: any = {};
+    if (this.sortBy === 'price_asc') {
+  this.visibleCourses.sort((a, b) => a.price - b.price);
+} else if (this.sortBy === 'price_desc') {
+  this.visibleCourses.sort((a, b) => b.price - a.price);
+}
     if (this.search) params['search'] = this.search;
     if (this.selectedCategory) params['category'] = this.selectedCategory;
     if (this.selectedType !== 'all') params['is_free'] = this.selectedType === 'free' ? 'true' : 'false';
