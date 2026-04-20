@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { TitleCasePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Course } from '../../models/course.model';
@@ -8,39 +9,65 @@ import { Course } from '../../models/course.model';
 @Component({
   selector: 'app-course-detail',
   standalone: true,
-  imports: [RouterLink, TitleCasePipe],
-  templateUrl: './course-detail.component.html',
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './course-detail.component.html'
 })
 export class CourseDetailComponent implements OnInit {
-  private api = inject(ApiService);
-  private route = inject(ActivatedRoute);
-  authService = inject(AuthService);
+  course: Course | null = null;
+  reviewText = '';
+  reviewRating = 5;
+  enrolling = false;
+  reviewError = '';
+  activeVideo: any = null;
 
-  course = signal<Course | null>(null);
-  isLoading = signal(true);
-  error = signal('');
-  enrollMessage = signal('');
-  isEnrolling = signal(false);
+  constructor(
+    private route: ActivatedRoute,
+    private api: ApiService,
+    public auth: AuthService
+  ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.api.getCourse(id).subscribe({
-      next: data => { this.course.set(data); this.isLoading.set(false); },
-      error: err => { this.error.set(err.message); this.isLoading.set(false); }
+    this.api.getCourse(id).subscribe(c => {
+      this.course = c;
+      this.activeVideo = c.videos?.[0] || null;
     });
   }
 
-  onEnroll(): void {
-    const c = this.course();
-    if (!c) return;
-    this.isEnrolling.set(true);
-    this.api.enrollCourse(c.id).subscribe({
-      next: () => { this.enrollMessage.set('Successfully enrolled! 🎉'); this.isEnrolling.set(false); },
-      error: err => { this.enrollMessage.set(err.message); this.isEnrolling.set(false); }
+  canWatch(video: any): boolean {
+    return video.is_free_preview || (this.course?.is_enrolled ?? false);
+  }
+
+  enroll() {
+    if (!this.course) return;
+    this.enrolling = true;
+    this.api.enrollCourse(this.course.id).subscribe({
+      next: () => { if (this.course) this.course.is_enrolled = true; this.enrolling = false; },
+      error: () => this.enrolling = false
     });
   }
 
-  getLevelColor(level: string): string {
-    return { beginner: '#10B981', intermediate: '#F59E0B', advanced: '#EF4444' }[level] || '#6B7280';
+  addToCart() {
+    if (!this.course) return;
+    this.api.addToCart(this.course.id).subscribe();
+  }
+
+  submitReview() {
+    if (!this.course) return;
+    this.api.addReview({
+      course: this.course.id,
+      rating: this.reviewRating,
+      comment: this.reviewText,
+      review_type: 'course'
+    }).subscribe({
+      next: (review: any) => {
+        this.course!.reviews.push(review);
+        this.reviewText = '';
+        this.reviewError = '';
+      },
+      error: (err) => {
+        this.reviewError = err.error?.error || 'You must be enrolled to review this course.';
+      }
+    });
   }
 }

@@ -1,29 +1,46 @@
-<div class="courses-page">
-  <div class="page-header">
-    <h1>All Courses</h1>
-    <p>Discover skills that shape your future</p>
-  </div>
+<div class="courses-page container">
+  <header class="page-header">
+    <h1>Explore Our Courses</h1>
+    <div class="filters-bar">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          [(ngModel)]="search" 
+          (ngModelChange)="onSearch()" 
+          placeholder="Search courses..." 
+          class="search-input branded-search" 
+        />
+      </div>
 
-  <div class="filters-bar">
-    <div class="search-wrap">
-      <input
-        type="text"
-        [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)"
-        (keyup.enter)="onSearch()"
-        placeholder="Search courses..."
-        class="filter-input"
-      />
-      <button (click)="onSearch()" class="search-go">Search</button>
+      <div class="controls">
+        <div class="select-wrapper">
+          <select [(ngModel)]="selectedCategory" (change)="loadCourses()" class="custom-select branded-select">
+            <option value="">All Categories</option>
+            @for (cat of categories; track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="type-tabs">
+          <button [class.active]="selectedType==='all'" (click)="selectedType='all'; loadCourses()">All</button>
+          <button [class.active]="selectedType==='free'" (click)="selectedType='free'; loadCourses()">Free</button>
+          <button [class.active]="selectedType==='paid'" (click)="selectedType='paid'; loadCourses()">Paid</button>
+        </div>
+
+        <div class="select-wrapper">
+          <select [(ngModel)]="sortBy" (change)="loadCourses()" class="custom-select branded-select">
+            <option value="">Sort by: Default</option>
+            <option value="rating">Top Rated</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
     </div>
-    <select #levelSelect class="filter-select" (change)="onLevelChange(levelSelect.value)">   
+  </header>
 
-      <option value="">All Levels</option>
-      <option value="beginner">Beginner</option>
-      <option value="intermediate">Intermediate</option>
-      <option value="advanced">Advanced</option>
-    </select>
-  </div>
+  @if (loading) { <div class="loading-state">Loading courses...</div> }
 
   @if (isLoading()) {
     <div class="loading-text">Loading courses...</div>
@@ -41,83 +58,143 @@
           </div>
           <div class="card-body">
             <h3>{{ course.title }}</h3>
-            <p class="sub">by {{ course.instructor_name }}</p>
-            <p class="desc">{{ course.description | slice:0:80 }}...</p>
-            <div class="meta">
-              <span class="badge" [style.background]="getLevelColor(course.level)">{{ course.level }}</span>
-              @if (course.average_rating) {
-                <span class="stars">★ {{ course.average_rating }}</span>
-              }
-              <span class="price">{{ course.price > 0 ? '$' + course.price : 'Free' }}</span>
+            <p class="company">by {{ course.company_name }}</p>
+            <div class="card-meta">
+               <span class="rating">⭐ {{ course.average_rating }}</span>
+               <span class="dot">·</span>
+               <span class="level">{{ course.level }}</span>
             </div>
           </div>
+          <div class="tooltip-box">{{ course.short_description }}</div>
         </a>
-      }
-    </div>
-  }
-</div>
+      </div>
+    }
+  </div>
 
+  <div class="pagination-controls">
+    <div class="stats">Showing {{ visibleCourses.length }} of {{ courses.length }}</div>
+    <div class="btn-group">
+      @if (hasMore) { <button (click)="showMore()" class="btn-primary">Show More</button> }
+      @if (canCollapse) { <button (click)="showLess()" class="btn-outline">Show Less</button> }
+    </div>
+  </div>
+</div>
 <style>
-  .courses-page { max-width: 1200px; margin: 0 auto; padding: 40px; }
-  .page-header { margin-bottom: 32px; }
-  .page-header h1 { font-size: 2rem; font-weight: 700; color: #1F2937; margin: 0 0 8px; }
-  .page-header p { color: #6B7280; margin: 0; }
-  .filters-bar { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
-  .search-wrap { display: flex; flex: 1; min-width: 240px; gap: 8px; }
-  .filter-input {
-    flex: 1;
-    padding: 10px 16px;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .filter-input:focus { border-color: #4F46E5; }
-  .search-go {
-    background: #4F46E5;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-  }
-  .filter-select {
-    padding: 10px 16px;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    outline: none;
-    cursor: pointer;
-  }
-  .results-count { color: #6B7280; font-size: 0.9rem; margin-bottom: 20px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    text-decoration: none;
-    transition: box-shadow 0.2s, transform 0.2s;
-  }
-  .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); transform: translateY(-3px); }
-  .card-thumb { height: 120px; padding: 12px; display: flex; align-items: flex-start; }
-  .chip {
-    background: rgba(255,255,255,0.25);
-    color: #fff;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-  }
-  .card-body { padding: 16px; }
-  .card-body h3 { font-size: 1rem; font-weight: 600; color: #1F2937; margin: 0 0 4px; }
-  .sub { font-size: 0.82rem; color: #9CA3AF; margin: 0 0 8px; }
-  .desc { font-size: 0.85rem; color: #6B7280; margin: 0 0 12px; line-height: 1.5; }
-  .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .badge { color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; text-transform: capitalize; }
-  .stars { color: #F59E0B; font-size: 0.85rem; }
-  .price { margin-left: auto; font-weight: 700; color: #4F46E5; font-size: 0.95rem; }
-  .loading-text, .empty-box { text-align: center; padding: 60px; color: #6B7280; font-size: 1.1rem; }
-  .error-box { background: #FEF2F2; color: #DC2626; padding: 16px; border-radius: 8px; }
-</style>
+  .courses-page { padding: 40px 0; font-family: 'Inter', sans-serif; }
+.page-header h1 { margin-bottom: 24px; font-weight: 800; color: #111827; }
+
+.filters-bar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 16px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin-bottom: 40px;
+}
+
+/* Фирменный поиск */
+.search-wrapper { position: left; flex: 1; min-width: 100px; }
+
+.branded-search {
+  width: 100%;
+  padding: 12px 20px 12px 48px;
+  border: 2px solid #f3f4f6;
+  border-radius: 50px; /* Полностью круглая */
+  background: #f9fafb;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.branded-search:focus {
+  background: white;
+  border-color: #4f46e5; /* Ваш фирменный цвет */
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.search-icon { 
+  position: absolute; 
+  left: 18px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  color: #9ca3af;
+  font-size: 1rem;
+}
+
+.controls { display: flex; gap: 12px; align-items: center; }
+
+/* Кастомные селекты */
+.select-wrapper { position: relative; }
+.select-wrapper::after {
+  content: '▼'; font-size: 0.7rem; color: #9ca3af;
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.branded-select {
+  appearance: none;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 10px 32px 10px 16px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.branded-select:focus { border-color: #4f46e5; background: white; }
+
+/* Табы */
+.type-tabs { display: flex; background: #f3f4f6; padding: 4px; border-radius: 10px; }
+.type-tabs button { 
+  border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; 
+  background: transparent; transition: all 0.2s; font-weight: 600; color: #6b7280;
+}
+.type-tabs button.active { background: white; color: #4f46e5; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+/* Grid & Cards */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+.course-card {
+  display: block; background: white; border-radius: 20px; overflow: hidden;
+  text-decoration: none; color: inherit; position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid #f1f5f9;
+}
+
+.course-card:hover { transform: translateY(-10px); box-shadow: 0 20px 30px rgba(0,0,0,0.08); }
+
+.image-box { position: relative; height: 190px; }
+.image-box img { width: 100%; height: 100%; object-fit: cover; }
+
+.badge {
+  position: absolute; top: 12px; left: 12px;
+  background: #111827; color: white; padding: 6px 12px;
+  border-radius: 8px; font-weight: bold; font-size: 0.85rem;
+}
+.badge.free { background: #10b981; }
+
+.card-body { padding: 24px; }
+.card-body h3 { margin: 0 0 10px; font-size: 1.25rem; line-height: 1.3; color: #1e293b; }
+.company { color: #6366f1; font-weight: 600; font-size: 0.9rem; margin-bottom: 12px; }
+
+.card-meta { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #64748b; font-weight: 500; }
+.dot { font-weight: bold; }
+
+/* Pagination */
+.pagination-controls { margin-top: 50px; text-align: center; }
+.stats { margin-bottom: 16px; color: #94a3b8; font-size: 0.9rem; }
+.btn-group { display: flex; justify-content: center; gap: 15px; }
+
+.btn-primary { background: #4f46e5; color: white; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+.btn-outline { background: transparent; border: 1px solid #e2e8f0; padding: 12px 30px; border-radius: 12px; font-weight: 600; cursor: pointer; }</style>

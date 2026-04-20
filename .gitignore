@@ -3,3 +3,12 @@ __pycache__/
 db.sqlite3
 venv/
 .vscode/git 
+
+*.pyo
+
+db.sqlite3
+
+.env
+
+.vscode/
+

@@ -1,0 +1,37 @@
+<div class="payment-page">
+  <div class="payment-card">
+    @if (success) {
+      <div class="success-screen">
+        <div class="checkmark">✓</div>
+        <h2>Payment Successful!</h2>
+        <p>You are now enrolled in <strong>{{ course?.title }}</strong></p>
+        <a href="/courses/{{ courseId }}">Go to Course</a>
+      </div>
+    } @else {
+      <h1>Complete Payment</h1>
+      @if (course) {
+        <div class="order-summary">
+          <span>{{ course.title }}</span>
+          <strong>${{ course.price }}</strong>
+        </div>
+      }
+      @if (error) { <p class="error">{{ error }}</p> }
+
+      <input [(ngModel)]="cardHolder" placeholder="Cardholder Name" />
+      <input [(ngModel)]="cardNumber" placeholder="Card Number (16 digits)" maxlength="19" />
+      <div class="card-row">
+        <input [(ngModel)]="expiry" placeholder="MM/YY" maxlength="5" />
+        <input [(ngModel)]="cvv" placeholder="CVV" maxlength="3" type="password" />
+      </div>
+
+      @if (loading) {
+        <div class="processing">
+          <div class="spinner"></div>
+          <p>Processing payment...</p>
+        </div>
+      } @else {
+        <button (click)="pay()" class="btn-pay">Pay ${{ course?.price }}</button>
+      }
+    }
+  </div>
+</div>

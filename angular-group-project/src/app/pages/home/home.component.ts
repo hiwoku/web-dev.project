@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgIf, NgFor } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { Course } from '../../models/course.model';
 
