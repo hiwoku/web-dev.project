@@ -30,7 +30,7 @@
       }
     </div>
   } @else if (error()) {
-    <div class="error-banner">⚠️ {{ error() }}</div>
+    <div class="error-banner"> {{ error() }}</div>
   } @else if (featuredCourses().length === 0) {
     <div class="empty-state">
       <p>No courses available yet. Be the first to add one!</p>

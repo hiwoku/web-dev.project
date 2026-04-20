@@ -2,7 +2,7 @@
   @if (isLoading()) {
     <div class="loading">Loading course details...</div>
   } @else if (error()) {
-    <div class="error-box">⚠️ {{ error() }}</div>
+    <div class="error-box"> {{ error() }}</div>
   } @else if (course()) {
     <div class="hero" [style.background]="'hsl(' + (course()!.id * 47 % 360) + ',60%,50%)'">
       <div class="hero-content">

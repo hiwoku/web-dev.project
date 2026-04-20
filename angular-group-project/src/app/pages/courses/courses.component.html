@@ -28,7 +28,7 @@
   @if (isLoading()) {
     <div class="loading-text">Loading courses...</div>
   } @else if (error()) {
-    <div class="error-box">⚠️ {{ error() }}</div>
+    <div class="error-box"> {{ error() }}</div>
   } @else if (courses().length === 0) {
     <div class="empty-box">No courses found. Try a different search.</div>
   } @else {
