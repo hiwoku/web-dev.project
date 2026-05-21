@@ -1,0 +1,444 @@
+<div class="payment-page">
+  <div class="payment-shell">
+    @if (pageLoading()) {
+      <div class="state-card">
+        <div class="spinner"></div>
+        <p>Loading payment details...</p>
+      </div>
+    } @else if (success()) {
+      <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h1>Payment Successful</h1>
+        <p>
+          You are now enrolled in
+          <strong>{{ course()?.title }}</strong>
+        </p>
+
+        <div class="success-actions">
+          <a [routerLink]="['/courses', courseId]" class="btn-primary">
+            Go to Course
+          </a>
+          <a routerLink="/courses" class="btn-secondary">
+            Back to Courses
+          </a>
+        </div>
+      </div>
+    } @else {
+      <div class="payment-grid">
+        <div class="summary-card">
+          <p class="eyebrow">Secure Checkout</p>
+          <h1>Complete Payment</h1>
+          <p class="subtitle">
+            Finish your order and get instant access to the course.
+          </p>
+
+          @if (course()) {
+            <div class="course-preview">
+              <img
+                [src]="course()?.thumbnail || 'assets/placeholder.png'"
+                [alt]="course()?.title || 'Course image'"
+              />
+
+              <div class="course-info">
+                <h2>{{ course()?.title }}</h2>
+                <p>{{ course()?.company_name || 'Course provider' }}</p>
+
+                <div class="course-meta">
+                  <span>{{ course()?.level || 'Course' }}</span>
+                  <span>${{ course()?.price }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="price-box">
+              <span>Total</span>
+              <strong>${{ course()?.price }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="form-card">
+          <h2>Payment Details</h2>
+
+          @if (error()) {
+            <div class="error-banner">{{ error() }}</div>
+          }
+
+          <div class="field">
+            <label for="cardHolder">Cardholder Name</label>
+            <input
+              id="cardHolder"
+              [(ngModel)]="cardHolder"
+              placeholder="e.g. Marissha Smith"
+            />
+          </div>
+
+          <div class="field">
+            <label for="cardNumber">Card Number</label>
+            <input
+              id="cardNumber"
+              [(ngModel)]="cardNumber"
+              placeholder="1234 5678 9012 3456"
+              maxlength="19"
+            />
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="expiry">Expiry Date</label>
+              <input
+                id="expiry"
+                [(ngModel)]="expiry"
+                placeholder="MM/YY"
+                maxlength="5"
+              />
+            </div>
+
+            <div class="field">
+              <label for="cvv">CVV</label>
+              <input
+                id="cvv"
+                [(ngModel)]="cvv"
+                placeholder="123"
+                maxlength="3"
+                type="password"
+              />
+            </div>
+          </div>
+
+          @if (loading()) {
+            <div class="processing-box">
+              <div class="spinner"></div>
+              <p>Processing payment...</p>
+            </div>
+          } @else {
+            <button (click)="pay()" class="btn-pay">
+              Pay ${{ course()?.price || 0 }}
+            </button>
+          }
+
+          <p class="secure-note">
+            Your payment is processed securely for demo purposes.
+          </p>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<style>
+  .payment-page {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 28%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    padding: 40px 20px 80px;
+  }
+
+  .payment-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .summary-card,
+  .form-card,
+  .success-card,
+  .state-card {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(79, 70, 229, 0.10);
+    backdrop-filter: blur(10px);
+  }
+
+  .eyebrow {
+    margin: 0 0 10px;
+    color: #4f46e5;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .summary-card h1,
+  .success-card h1 {
+    margin: 0 0 10px;
+    color: #111827;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    margin: 0 0 24px;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+
+  .course-preview {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 18px;
+    margin-bottom: 22px;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+  }
+
+  .course-preview img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 14px;
+    background: #eef2ff;
+  }
+
+  .course-info h2 {
+    margin: 0 0 8px;
+    color: #111827;
+    font-size: 1.1rem;
+  }
+
+  .course-info p {
+    margin: 0 0 12px;
+    color: #6b7280;
+  }
+
+  .course-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .price-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: #eef2ff;
+    color: #312e81;
+  }
+
+  .price-box span {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .price-box strong {
+    font-size: 1.4rem;
+  }
+
+  .form-card h2 {
+    margin: 0 0 18px;
+    color: #111827;
+    font-size: 1.4rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .field input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 0.97rem;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .btn-pay,
+  .btn-primary,
+  .btn-secondary {
+    border: none;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .btn-pay,
+  .btn-primary {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.24);
+  }
+
+  .btn-secondary {
+    background: #eef2ff;
+    color: #4338ca;
+  }
+
+  .btn-pay:hover,
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-pay {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .secure-note {
+    margin: 14px 0 0;
+    color: #6b7280;
+    font-size: 0.92rem;
+    text-align: center;
+  }
+
+  .processing-box,
+  .state-card {
+    text-align: center;
+  }
+
+  .processing-box {
+    padding: 18px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    margin-top: 6px;
+  }
+
+  .processing-box p,
+  .state-card p {
+    margin: 10px 0 0;
+    color: #4b5563;
+  }
+
+  .spinner {
+    width: 34px;
+    height: 34px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #4f46e5;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+  }
+
+  .error-banner {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 14px 16px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .success-card {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .success-card p {
+    color: #4b5563;
+    margin: 0 0 22px;
+  }
+
+  .success-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .payment-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .course-preview {
+      grid-template-columns: 1fr;
+    }
+
+    .course-preview img {
+      height: 180px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .payment-page {
+      padding: 24px 14px 60px;
+    }
+
+    .summary-card,
+    .form-card,
+    .success-card,
+    .state-card {
+      padding: 20px;
+      border-radius: 20px;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+    }
+
+    .summary-card h1,
+    .success-card h1 {
+      font-size: 1.7rem;
+    }
+  }
+</style>

@@ -1,0 +1,62 @@
+
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Login</h1>
+
+    @if (error()) {
+      <div class="error">{{ error() }}</div>
+    }
+
+    <form (ngSubmit)="submit()" class="auth-form">
+      <input
+        type="text"
+        name="username"
+        [(ngModel)]="form.username"
+        placeholder="Username"
+        required
+      />
+
+      <input
+        type="password"
+        name="password"
+        [(ngModel)]="form.password"
+        placeholder="Password"
+        required
+      />
+
+      <button type="submit" [disabled]="isSubmitting()">
+        @if (isSubmitting()) { Logging in... } @else { Login }
+      </button>
+    </form>
+
+    <p class="bottom-text">
+      Don’t have an account?
+      <a routerLink="/register">Register</a>
+    </p>
+  </div>
+</div>
+
+<style>
+  .auth-page {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #f8fafc; padding: 20px;
+  }
+  .auth-card {
+    width: 100%; max-width: 420px; background: white; padding: 32px;
+    border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+  .auth-card h1 { margin: 0 0 20px; }
+  .auth-form { display: flex; flex-direction: column; gap: 14px; }
+  .auth-form input {
+    padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 10px;
+  }
+  .auth-form button {
+    border: none; background: #4f46e5; color: white; padding: 12px;
+    border-radius: 10px; font-weight: 700; cursor: pointer;
+  }
+  .error {
+    background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 10px; margin-bottom: 14px;
+  }
+  .bottom-text { margin-top: 16px; color: #6b7280; }
+  .bottom-text a { color: #4f46e5; text-decoration: none; }
+</style>

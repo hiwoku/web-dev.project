@@ -1,0 +1,538 @@
+<div class="profile-page">
+  <div class="profile-shell">
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="loading-card">Loading profile...</div>
+      </div>
+    } @else {
+      <div class="profile-layout">
+        <aside class="profile-sidebar">
+          <div class="profile-card">
+            <div class="avatar-wrap">
+              <div class="avatar">
+                {{ getInitials() }}
+              </div>
+            </div>
+
+            <div class="profile-main-info">
+              <p class="profile-role-badge">
+                @if (isCompany()) {
+                  Company account
+                } @else if (isPersonal()) {
+                  Student account
+                } @else {
+                  User account
+                }
+              </p>
+
+              <h1>{{ getDisplayName() }}</h1>
+              <p class="username">@{{ user()?.username }}</p>
+            </div>
+
+            <div class="info-list">
+              <div class="info-item">
+                <span class="label">Email</span>
+                <span class="value">{{ user()?.email || 'Not provided' }}</span>
+              </div>
+
+              <div class="info-item">
+                <span class="label">Account type</span>
+                <span class="value">{{ user()?.user_type || 'user' }}</span>
+              </div>
+
+              @if (isPersonal()) {
+                <div class="info-item">
+                  <span class="label">Wishlist</span>
+                  <span class="value">{{ cartCourses().length }}</span>
+                </div>
+
+                <div class="info-item">
+                  <span class="label">Enrolled</span>
+                  <span class="value">{{ enrolledCourses().length }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="logout-wrap">
+              <span class="logout-text" (click)="logout()">Logout</span>
+            </div>
+          </div>
+        </aside>
+
+        <section class="profile-content">
+          @if (error()) {
+            <div class="error-banner">
+              {{ error() }}
+            </div>
+          }
+
+          @if (isPersonal()) {
+            <div class="content-grid">
+              <div class="content-card">
+                <div class="card-head">
+                  <div>
+                    <p class="card-eyebrow">Wishlist</p>
+                    <h2>Courses I want to take</h2>
+                  </div>
+                  <span class="count-pill">{{ cartCourses().length }}</span>
+                </div>
+
+                @if (cartCourses().length > 0) {
+                  <div class="course-list">
+                    @for (course of cartCourses(); track course.id) {
+                      <a [routerLink]="['/courses', course.id]" class="course-item">
+                        <div class="course-text">
+                          <h3>{{ course.title }}</h3>
+                          <p>
+                            {{ course.category_name || 'General' }}
+                            •
+                            {{ course.instructor_name || course.company_name || 'Instructor' }}
+                          </p>
+                        </div>
+
+                        <div class="course-meta">
+                          <span class="level-chip">
+                            {{ getLevelLabel(course.level) }}
+                          </span>
+                          <span class="price-chip">{{ formatPrice(course) }}</span>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <p>You have not added any courses yet.</p>
+                    <a routerLink="/courses" class="link-action">Explore courses</a>
+                  </div>
+                }
+              </div>
+
+              <div class="content-card">
+                <div class="card-head">
+                  <div>
+                    <p class="card-eyebrow">Learning</p>
+                    <h2>Courses I am taking</h2>
+                  </div>
+                  <span class="count-pill">{{ enrolledCourses().length }}</span>
+                </div>
+
+                @if (enrolledCourses().length > 0) {
+                  <div class="course-list">
+                    @for (course of enrolledCourses(); track course.id) {
+                      <a [routerLink]="['/courses', course.id]" class="course-item">
+                        <div class="course-text">
+                          <h3>{{ course.title }}</h3>
+                          <p>
+                            {{ course.category_name || 'General' }}
+                            •
+                            {{ course.instructor_name || course.company_name || 'Instructor' }}
+                          </p>
+                        </div>
+
+                        <div class="course-meta">
+                          <span class="level-chip">
+                            {{ getLevelLabel(course.level) }}
+                          </span>
+                          <span class="price-chip">{{ formatPrice(course) }}</span>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <p>You are not enrolled in any courses yet.</p>
+                    <a routerLink="/courses" class="link-action">Browse courses</a>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="content-card">
+              <p class="card-eyebrow">Profile</p>
+              <h2>Your account</h2>
+              <p class="company-text">
+                Your account information is displayed on the left.
+              </p>
+            </div>
+          }
+        </section>
+      </div>
+    }
+  </div>
+</div>
+
+<style>
+  .profile-page {
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+    background:
+      radial-gradient(circle at top left, rgba(79, 70, 229, 0.08), transparent 28%),
+      linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    font-family: 'Inter', sans-serif;
+  }
+
+  .profile-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+  .loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+  }
+  .profile-sidebar {
+  margin-left: -10px;
+}
+
+  .loading-card {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 36px;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.06);
+    color: #475569;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .profile-layout {
+    display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+  }
+
+  .profile-card,
+  .content-card {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 15px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+  }
+
+  .profile-card {
+    padding: 30px 26px;
+    position: sticky;
+    top: 24px;
+  }
+
+  .avatar-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .avatar {
+    width: 108px;
+    height: 108px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    box-shadow: 0 14px 30px rgba(79, 70, 229, 0.18);
+    font-family: 'Inter', sans-serif;
+    border-radius: 50%; 
+  }
+
+  .profile-main-info {
+    text-align: center;
+  }
+
+  .profile-role-badge {
+    display: inline-block;
+    margin: 0 0 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .profile-main-info h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    line-height: 1.1;
+    color: #0f172a;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .username {
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 0.98rem;
+    font-weight: 500;
+  }
+
+  .info-list {
+    margin-top: 26px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .info-item {
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .label {
+    color: #64748b;
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+
+  .value {
+    color: #0f172a;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .logout-wrap {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .logout-text {
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 0.98rem;
+    cursor: pointer;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    user-select: none;
+  }
+
+  .logout-text:hover {
+    opacity: 0.75;
+    transform: translateY(-1px);
+  }
+
+  .profile-content {
+    display: grid;
+    gap: 24px;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .content-card {
+    padding: 26px;
+  }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 22px;
+  }
+
+  .card-eyebrow {
+    margin: 0 0 8px;
+    color: #6366f1;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .card-head h2,
+  .content-card h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 1.45rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .count-pill {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .course-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .course-item {
+    text-decoration: none;
+    color: inherit;
+    padding: 18px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .course-item:hover {
+    transform: translateY(-2px);
+    border-color: #d6d3f8;
+    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.08);
+  }
+
+  .course-text h3 {
+    margin: 0 0 8px;
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .course-text p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    font-weight: 400;
+  }
+
+  .course-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .level-chip,
+  .price-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .level-chip {
+    background: #ede9fe;
+    color: #5b21b6;
+  }
+
+  .price-chip {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .empty-state {
+    padding: 26px 20px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    text-align: center;
+  }
+
+  .empty-state p {
+    margin: 0 0 12px;
+    color: #64748b;
+    font-weight: 400;
+  }
+
+  .link-action {
+    color: #4f46e5;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .company-text {
+    margin: 14px 0 0;
+    color: #64748b;
+    line-height: 1.65;
+    max-width: 700px;
+    font-weight: 400;
+  }
+
+  .error-banner {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 14px 16px;
+    border-radius: 16px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  @media (max-width: 1024px) {
+    .profile-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-card {
+      position: static;
+    }
+
+    .content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .profile-page {
+      padding: 24px 14px 40px;
+    }
+
+    .profile-card,
+    .content-card {
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .profile-main-info h1 {
+      font-size: 1.6rem;
+    }
+
+    .avatar {
+      width: 96px;
+      height: 96px;
+      font-size: 1.8rem;
+    }
+
+    .course-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .course-meta {
+      align-items: flex-start;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+</style>

@@ -1,0 +1,51 @@
+
+<div class="page">
+  <div class="container">
+    <h1>Companies</h1>
+
+    @if (isLoading()) {
+      <p>Loading companies...</p>
+    } @else if (error()) {
+      <div class="error">{{ error() }}</div>
+    } @else if (companies().length === 0) {
+      <div class="empty">No companies yet.</div>
+    } @else {
+      <div class="grid">
+        @for (company of companies(); track company.id) {
+          <a [routerLink]="['/companies', company.id]" class="card">
+            <div class="card-body">
+              <h2>{{ company.name }}</h2>
+              <p>{{ company.description || 'No description available.' }}</p>
+
+              <div class="meta">
+                <span>{{ company.city || 'Unknown city' }}</span>
+                <span>{{ company.courses?.length || 0 }} courses</span>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<style>
+  .page { padding: 32px 20px; background: #f8fafc; min-height: 100vh; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { margin-bottom: 24px; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+  }
+  .card {
+    text-decoration: none; color: inherit; background: white; border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .card-body { padding: 20px; }
+  .card h2 { margin: 0 0 10px; color: #111827; }
+  .card p { margin: 0 0 14px; color: #6b7280; }
+  .meta {
+    display: flex; justify-content: space-between; color: #4b5563; font-size: 0.9rem;
+  }
+  .error { color: #dc2626; background: #fef2f2; padding: 14px; border-radius: 10px; }
+  .empty { text-align: center; color: #6b7280; padding: 30px; }
+</style>

@@ -1,0 +1,246 @@
+<div class="page">
+  <div class="container">
+    @if (isLoading()) {
+      <p>Loading company...</p>
+    } @else if (error()) {
+      <div class="error">{{ error() }}</div>
+    } @else if (company(); as c) {
+      <div class="company-detail">
+
+        <div class="header">
+          <img [src]="c.logo || 'assets/company-placeholder.png'" alt="Company logo" />
+
+          <div class="info">
+            <h1>{{ c.name }}</h1>
+            <p>{{ c.description }}</p>
+
+            <div class="meta">
+              <span>⭐ {{ c.average_rating || 0 }}</span>
+              <span>{{ c.courses_count || 0 }} courses</span>
+            </div>
+
+            @if (c.website) {
+              <a [href]="c.website" target="_blank">Visit website</a>
+            }
+          </div>
+        </div>
+
+        <section class="courses">
+          <h2>Courses</h2>
+
+          @if (c.courses && c.courses.length > 0) {
+            <div class="courses-grid">
+              @for (course of c.courses; track course.id) {
+                <a class="course-card" [routerLink]="['/courses', course.id]">
+                  <img [src]="course.thumbnail || 'assets/placeholder.png'" alt="Course image" />
+
+                  <div class="course-body">
+                    <h3>{{ course.title }}</h3>
+                    <p>{{ course.description || 'No description available.' }}</p>
+
+                    <span>
+                      ⭐ {{ course.average_rating || 0 }}
+                      · {{ course.is_free ? 'Free' : ('$' + course.price) }}
+                    </span>
+                  </div>
+                </a>
+              }
+            </div>
+          } @else {
+            <p>No courses yet.</p>
+          }
+        </section>
+
+        <section class="reviews">
+          <h2>Reviews</h2>
+
+          @if (c.reviews && c.reviews.length > 0) {
+            <div class="reviews-list">
+              @for (r of c.reviews; track r.id) {
+                <div class="review">
+                  <b>{{ r.username }}</b>
+                  <span>⭐ {{ r.rating }}</span>
+                  <p>{{ r.comment }}</p>
+                </div>
+              }
+            </div>
+          } @else {
+            <p>No reviews yet.</p>
+          }
+        </section>
+
+      </div>
+    }
+  </div>
+</div>
+
+<style>
+  .page {
+    min-height: 100vh;
+    background: #f8fafc;
+    padding: 32px 20px;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .company-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .header {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 28px;
+    align-items: start;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .header img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 18px;
+    background: #eef2ff;
+  }
+
+  .info h1 {
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 2rem;
+  }
+
+  .info p {
+    margin: 0 0 16px;
+    color: #4b5563;
+    line-height: 1.6;
+  }
+
+  .meta {
+    display: flex;
+    gap: 18px;
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .info a {
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .courses,
+  .reviews {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .courses h2,
+  .reviews h2 {
+    margin: 0 0 18px;
+    color: #111827;
+  }
+
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  .course-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #fff;
+  }
+
+  .course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .course-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    background: #f3f4f6;
+  }
+
+  .course-body {
+    padding: 16px;
+  }
+
+  .course-body h3 {
+    margin: 0 0 8px;
+    color: #111827;
+  }
+
+  .course-body p {
+    margin: 0 0 10px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  .course-body span {
+    color: #374151;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .reviews-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .review {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+  }
+
+  .review b {
+    color: #111827;
+    margin-right: 8px;
+  }
+
+  .review span {
+    color: #374151;
+  }
+
+  .review p {
+    margin: 10px 0 0;
+    color: #4b5563;
+  }
+
+  .error {
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .header {
+      grid-template-columns: 1fr;
+    }
+
+    .header img {
+      height: 220px;
+    }
+  }
+</style>

@@ -1,0 +1,421 @@
+<div class="page">
+  <div class="container">
+    @if (isLoading()) {
+      <p>Loading course...</p>
+    } @else if (error()) {
+      <div class="error">{{ error() }}</div>
+    } @else if (course()) {
+      <div class="course-detail">
+
+        <img
+          class="course-banner"
+          [src]="course()!.thumbnail || 'assets/placeholder.png'"
+          [alt]="course()!.title"
+        />
+
+        <div class="course-info">
+          <h1>{{ course()!.title }}</h1>
+
+          <p class="company">by {{ course()!.company_name }}</p>
+
+          <div class="meta">
+            <span>⭐ {{ course()!.average_rating || 0 }}</span>
+            <span>{{ course()!.level }}</span>
+            <span>{{ course()!.duration_hours || 0 }}h</span>
+          </div>
+
+          <p class="description">{{ course()!.description }}</p>
+
+          <div class="skills">
+            <strong>Skills you'll gain:</strong>
+
+            @if (course()!.skills && course()!.skills.length > 0) {
+              <div class="skills-list">
+                @for (skill of course()!.skills; track skill) {
+                  <span class="skill-tag">{{ skill }}</span>
+                }
+              </div>
+            } @else {
+              <span class="no-skills">No skills listed yet.</span>
+            }
+          </div>
+
+          <div class="actions">
+            @if ((course()!.price || 0) <= 0) {
+  <button
+    (click)="enroll()"
+    [disabled]="course()!.is_enrolled || enrolling()"
+    class="btn-primary"
+  >
+    {{ course()!.is_enrolled ? 'Enrolled' : 'Enroll for Free' }}
+  </button>
+} @else {
+  @if (!course()!.is_enrolled) {
+    <a [routerLink]="['/payment', course()!.id]" class="btn-primary">
+      Buy — ${{ course()!.price }}
+    </a>
+    <button
+  (click)="addToCart()"
+  class="btn-secondary"
+  [disabled]="course()!.is_in_cart || addingToCart()"
+>
+  {{
+    course()!.is_in_cart
+      ? '✓ Added to Wishlist'
+      : addingToCart()
+        ? 'Adding...'
+        : '+ Plan to Take'
+  }}
+</button>
+  } @else {
+    <span class="enrolled-badge">✓ Enrolled</span>
+  }
+}
+          </div>
+        </div>
+
+        <section class="videos-section">
+          <h2>Course Content</h2>
+
+          @if (course()!.videos && course()!.videos.length > 0) {
+            <div class="videos-list">
+              @for (video of course()!.videos; track video.id) {
+                <div class="video-item" [class.locked]="!canWatch(video)">
+                  <button (click)="selectVideo(video)">
+                    {{ video.is_free_preview ? '▶ Preview' : (course()!.is_enrolled ? '▶ Lesson' : '🔒 Locked') }}
+                    {{ video.title }}
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (activeVideo() && canWatch(activeVideo()!)) {
+              <div class="video-player">
+                <iframe [src]="activeVideo()!.video_url" allowfullscreen></iframe>
+              </div>
+            }
+          } @else {
+            <p>No videos yet.</p>
+          }
+        </section>
+
+        <section class="reviews-section">
+          <h2>Reviews</h2>
+
+          @if (course()!.reviews && course()!.reviews.length > 0) {
+            <div class="reviews-list">
+              @for (review of course()!.reviews; track review.id) {
+                <div class="review-card">
+                  <div class="review-top">
+                    <strong>{{ review.username }}</strong>
+                    <span class="stars">{{ '⭐'.repeat(review.rating) }}</span>
+                  </div>
+                  <p>{{ review.comment }}</p>
+                  <small>{{ review.created_at | date }}</small>
+                </div>
+              }
+            </div>
+          } @else {
+            <p>No reviews yet.</p>
+          }
+
+          @if (auth.isLoggedIn()) {
+            <div class="add-review">
+              <h3>Leave a Review</h3>
+
+              @if (reviewError()) {
+                <p class="error">{{ reviewError() }}</p>
+              }
+
+              <select [ngModel]="reviewRating()" (ngModelChange)="reviewRating.set($event)">
+                @for (n of [5,4,3,2,1]; track n) {
+                  <option [value]="n">{{ n }} Stars</option>
+                }
+              </select>
+
+              <textarea
+                [ngModel]="reviewText()"
+                (ngModelChange)="reviewText.set($event)"
+                placeholder="Share your experience..."
+              ></textarea>
+
+              <button (click)="submitReview()">Submit Review</button>
+            </div>
+          }
+        </section>
+
+      </div>
+    }
+  </div>
+</div>
+
+<style>
+  .page {
+    min-height: 100vh;
+    background: #f8fafc;
+    padding: 32px 20px;
+  }
+
+  .container {
+    max-width: 1150px;
+    margin: 0 auto;
+  }
+
+  .course-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .course-info,
+  .videos-section,
+  .reviews-section {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .course-banner {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 20px;
+    background: #eef2ff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .course-info h1 {
+    margin: 0 0 10px;
+    color: #111827;
+    font-size: 2rem;
+    line-height: 1.15;
+  }
+
+  .company {
+    color: #4f46e5;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: #374151;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .description {
+    color: #4b5563;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .skills {
+    margin-bottom: 20px;
+  }
+
+  .skills strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #111827;
+  }
+
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .skill-tag {
+    display: inline-block;
+    padding: 8px 12px;
+    background: #eef2ff;
+    color: #4338ca;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .no-skills {
+    color: #6b7280;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .add-review button {
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-primary,
+  .add-review button {
+    background: #4f46e5;
+    color: white;
+  }
+
+  .btn-secondary {
+    background: #eef2ff;
+    color: #4338ca;
+  }
+
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .add-review button:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .enrolled-badge {
+    background: #dcfce7;
+    color: #166534;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .videos-section h2,
+  .reviews-section h2 {
+    margin: 0 0 18px;
+    color: #111827;
+  }
+
+  .videos-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .video-item button {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 0.98rem;
+    cursor: pointer;
+    color: #111827;
+    transition: 0.2s ease;
+  }
+
+  .video-item button:hover {
+    background: #f9fafb;
+  }
+
+  .video-item.locked button {
+    color: #6b7280;
+    background: #f3f4f6;
+  }
+
+  .video-player {
+    margin-top: 12px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .video-player iframe {
+    width: 100%;
+    height: 420px;
+    border: 0;
+  }
+
+  .reviews-list {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .review-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+  }
+
+  .review-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .review-card p {
+    margin: 0 0 10px;
+    color: #4b5563;
+    line-height: 1.6;
+  }
+
+  .review-card small {
+    color: #6b7280;
+  }
+
+  .stars {
+    color: #f59e0b;
+  }
+
+  .add-review {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 20px;
+  }
+
+  .add-review h3 {
+    margin: 0 0 14px;
+    color: #111827;
+  }
+
+  .add-review select,
+  .add-review textarea {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.96rem;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+  }
+
+  .add-review textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .error {
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 900px) {
+    .course-banner {
+      height: 220px;
+    }
+
+    .video-player iframe {
+      height: 260px;
+    }
+  }
+</style>

@@ -1,0 +1,33 @@
+<section class="faq-section">
+  <div class="faq-container">
+    <h2 class="faq-title">Frequently Asked Questions</h2>
+
+    <div class="faq-list">
+      @for (faq of visibleFaqs(); track faq.id) {
+        <div class="faq-item" [class.open]="faq.open">
+          <button class="faq-question" type="button" (click)="toggleFaq(faq.id)">
+            <span class="question-text">{{ faq.question }}</span>
+            <span class="icon-circle">
+              {{ faq.open ? '−' : '+' }}
+            </span>
+          </button>
+
+          @if (faq.open) {
+            <div class="faq-answer">
+              <p>{{ faq.answer }}</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (hasMore()) {
+      <div class="faq-more">
+        <button class="view-more-btn" type="button" (click)="toggleExpanded()">
+          {{ expanded() ? 'View Less' : 'View More' }}
+          <span class="arrow" [class.rotate]="expanded()">⌄</span>
+        </button>
+      </div>
+    }
+  </div>
+</section>
